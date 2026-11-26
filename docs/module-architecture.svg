@@ -1,0 +1,113 @@
+<svg viewBox="0 0 900 580" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arr-ext" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#9C4FC7"/>
+    </marker>
+    <filter id="sh" x="-5%" y="-5%" width="115%" height="120%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="580" fill="#F8F9FB" rx="8"/>
+  <text x="450" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#1A1A2E">Arquitetura de Módulos — Interfaces &amp; Extensibilidade</text>
+  <text x="450" y="54" text-anchor="middle" font-size="12" fill="#666">Adicionar um novo LLM = 1 arquivo + 1 entrada no config.yaml</text>
+
+  <!-- ════ LEFT COLUMN: TAGGER PLUGIN SYSTEM ════ -->
+  <text x="225" y="82" text-anchor="middle" font-size="14" font-weight="700" fill="#4A0070">Sistema de Taggers</text>
+
+  <!-- BaseTagger -->
+  <rect x="140" y="94" width="170" height="58" rx="7" fill="#F3E5F5" stroke="#9C4FC7" stroke-width="2" filter="url(#sh)"/>
+  <text x="225" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#4A0070">«interface»</text>
+  <text x="225" y="131" text-anchor="middle" font-size="12" fill="#4A0070">BaseTagger</text>
+  <text x="225" y="145" text-anchor="middle" font-size="10" fill="#7B00B0">tag(problem) → TagResult</text>
+
+  <!-- Implementations -->
+  <rect x="30" y="196" width="150" height="52" rx="6" fill="#FFF" stroke="#9C4FC7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="105" y="217" text-anchor="middle" font-size="11" font-weight="600" fill="#4A0070">SimilarityTagger</text>
+  <text x="105" y="232" text-anchor="middle" font-size="10" fill="#666">MiniLM embeddings</text>
+  <text x="105" y="244" text-anchor="middle" font-size="9" fill="#999">sentence-transformers</text>
+
+  <rect x="200" y="196" width="150" height="52" rx="6" fill="#EDE7F6" stroke="#9C4FC7" stroke-width="1.5" stroke-dasharray="5,3" filter="url(#sh)"/>
+  <text x="275" y="217" text-anchor="middle" font-size="11" font-weight="600" fill="#4A0070">OpenAITagger*</text>
+  <text x="275" y="232" text-anchor="middle" font-size="10" fill="#888">gpt-4o</text>
+  <text x="275" y="244" text-anchor="middle" font-size="9" fill="#AAA">futuro</text>
+
+  <rect x="370" y="196" width="150" height="52" rx="6" fill="#EDE7F6" stroke="#9C4FC7" stroke-width="1.5" stroke-dasharray="5,3" filter="url(#sh)"/>
+  <text x="445" y="217" text-anchor="middle" font-size="11" font-weight="600" fill="#4A0070">ClaudeTagger*</text>
+  <text x="445" y="232" text-anchor="middle" font-size="10" fill="#888">claude-sonnet</text>
+  <text x="445" y="244" text-anchor="middle" font-size="9" fill="#AAA">futuro</text>
+
+  <!-- Lines from Base to implementations -->
+  <line x1="225" y1="152" x2="105" y2="196" stroke="#9C4FC7" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-ext)"/>
+  <line x1="225" y1="152" x2="275" y2="196" stroke="#9C4FC7" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-ext)"/>
+  <line x1="225" y1="152" x2="445" y2="196" stroke="#9C4FC7" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-ext)"/>
+
+  <!-- EnsembleTagger -->
+  <rect x="140" y="295" width="380" height="72" rx="7" fill="#F3E5F5" stroke="#9C4FC7" stroke-width="2" filter="url(#sh)"/>
+  <text x="330" y="318" text-anchor="middle" font-size="13" font-weight="700" fill="#4A0070">EnsembleTagger</text>
+  <text x="330" y="336" text-anchor="middle" font-size="10" fill="#7B00B0">recebe lista[BaseTagger] via config.yaml</text>
+  <text x="330" y="351" text-anchor="middle" font-size="10" fill="#7B00B0">votação por maioria (confidence-weighted) → TagResult</text>
+
+  <!-- Lines from implementations to Ensemble -->
+  <line x1="105" y1="248" x2="230" y2="295" stroke="#9C4FC7" stroke-width="1.5" marker-end="url(#arr-ext)"/>
+  <line x1="275" y1="248" x2="310" y2="295" stroke="#9C4FC7" stroke-width="1.5" marker-end="url(#arr-ext)"/>
+  <line x1="445" y1="248" x2="390" y2="295" stroke="#9C4FC7" stroke-width="1.5" marker-end="url(#arr-ext)"/>
+
+  <!-- TagResult output -->
+  <rect x="250" y="410" width="260" height="80" rx="7" fill="#FFF" stroke="#9C4FC7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="380" y="430" text-anchor="middle" font-size="12" font-weight="700" fill="#4A0070">TagResult</text>
+  <text x="380" y="447" text-anchor="middle" font-size="10" fill="#444">tags: list[str]</text>
+  <text x="380" y="461" text-anchor="middle" font-size="10" fill="#444">confidence: float (0.0–1.0)</text>
+  <text x="380" y="475" text-anchor="middle" font-size="10" fill="#444">votes: dict[str, float]</text>
+  <text x="380" y="489" text-anchor="middle" font-size="10" fill="#C86A00">estimated: bool = True  ← sempre</text>
+
+  <line x1="330" y1="367" x2="330" y2="410" stroke="#9C4FC7" stroke-width="1.5" marker-end="url(#arr-ext)"/>
+
+  <!-- ════ RIGHT COLUMN: RATING PREDICTOR ════ -->
+  <text x="750" y="82" text-anchor="middle" font-size="14" font-weight="700" fill="#7B4A00">Sistema de Preditores</text>
+
+  <!-- BaseRatingPredictor -->
+  <rect x="665" y="94" width="170" height="58" rx="7" fill="#FFF3E0" stroke="#E8973A" stroke-width="2" filter="url(#sh)"/>
+  <text x="750" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#7B4A00">«interface»</text>
+  <text x="750" y="131" text-anchor="middle" font-size="11" fill="#7B4A00">BaseRatingPredictor</text>
+  <text x="750" y="145" text-anchor="middle" font-size="10" fill="#C86A00">predict(…) → RatingResult</text>
+
+  <!-- Implementations -->
+  <rect x="600" y="196" width="145" height="52" rx="6" fill="#FFF" stroke="#E8973A" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="672" y="217" text-anchor="middle" font-size="11" font-weight="600" fill="#7B4A00">MLPredictor</text>
+  <text x="672" y="232" text-anchor="middle" font-size="10" fill="#666">Gradient Boosting</text>
+  <text x="672" y="244" text-anchor="middle" font-size="9" fill="#999">sklearn / XGBoost</text>
+
+  <rect x="755" y="196" width="130" height="52" rx="6" fill="#FFF8E1" stroke="#E8973A" stroke-width="1.5" stroke-dasharray="5,3" filter="url(#sh)"/>
+  <text x="820" y="217" text-anchor="middle" font-size="11" font-weight="600" fill="#7B4A00">LLMPredictor*</text>
+  <text x="820" y="232" text-anchor="middle" font-size="10" fill="#888">GPT-4o / Claude</text>
+  <text x="820" y="244" text-anchor="middle" font-size="9" fill="#AAA">futuro</text>
+
+  <line x1="750" y1="152" x2="672" y2="196" stroke="#E8973A" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr)"/>
+  <line x1="750" y1="152" x2="820" y2="196" stroke="#E8973A" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr)"/>
+
+  <!-- RatingResult -->
+  <rect x="660" y="295" width="195" height="90" rx="7" fill="#FFF" stroke="#E8973A" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="757" y="315" text-anchor="middle" font-size="12" font-weight="700" fill="#7B4A00">RatingResult</text>
+  <text x="757" y="332" text-anchor="middle" font-size="10" fill="#444">cf_scaled_difficulty: float</text>
+  <text x="757" y="347" text-anchor="middle" font-size="10" fill="#444">confidence: float</text>
+  <text x="757" y="362" text-anchor="middle" font-size="10" fill="#C86A00">estimated: bool = True</text>
+  <text x="757" y="377" text-anchor="middle" font-size="10" fill="#444">model_name: str</text>
+
+  <line x1="672" y1="248" x2="715" y2="295" stroke="#E8973A" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="820" y1="248" x2="800" y2="295" stroke="#E8973A" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- config.yaml note -->
+  <rect x="600" y="420" width="265" height="52" rx="6" fill="#E8EDF7" stroke="#6B85C7" stroke-width="1.5"/>
+  <text x="732" y="441" text-anchor="middle" font-size="11" font-weight="600" fill="#2C3E7A">config.yaml</text>
+  <text x="732" y="457" text-anchor="middle" font-size="10" fill="#2C3E7A">ativa/desativa taggers e preditores</text>
+  <text x="732" y="469" text-anchor="middle" font-size="9" fill="#6B85C7">sem alterar o código da pipeline</text>
+
+  <line x1="757" y1="385" x2="732" y2="420" stroke="#6B85C7" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arr)"/>
+
+  <!-- Footer -->
+  <text x="450" y="545" text-anchor="middle" font-size="10" fill="#AAA" font-style="italic">* futuro · COD3LYTICS · Mestrado PPGTI-IFPB · Andressa Theotônio · 2026</text>
+</svg>

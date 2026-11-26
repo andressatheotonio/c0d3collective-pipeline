@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# Trained model (regenerated from dataset)
+normalizers/rating_predictor/ml_model.pkl
+
+# Large data files — dataset is committed explicitly
+data/*.csv.bak
+data/tmp_*
+
+# IDE
+.vscode/
+.idea/
+*.swp

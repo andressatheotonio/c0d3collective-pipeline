@@ -1,0 +1,49 @@
+# C0D3Collective Pipeline Configuration
+
+# ── Collectors ──────────────────────────────────────────────────────────────
+collectors:
+  codeforces:
+    enabled: true
+  atcoder:
+    enabled: true
+  kattis:
+    enabled: true
+
+# ── Rating normalization ─────────────────────────────────────────────────────
+# Active predictors for unrated problems (Decision 2: all predictions = estimated)
+# To add a new LLM predictor: add a name here and implement in
+# normalizers/rating_predictor/<name>_predictor.py
+rating_predictors:
+  - name: gradient_boosting
+    # Future entries:
+    # - name: openai_gpt4o
+    #   model: gpt-4o
+    # - name: claude_sonnet
+    #   model: claude-sonnet-5-5
+
+# ── Taggers ──────────────────────────────────────────────────────────────────
+# Active taggers for untagged problems (Decision 3: modular LLM ensemble)
+# Majority vote threshold: fraction of taggers that must agree on a tag
+tag_majority_threshold: 0.5
+taggers:
+  - name: similarity_minilm
+    model: all-MiniLM-L6-v2
+    top_k: 5
+    min_similarity: 0.70
+    # Future entries:
+    # - name: openai_gpt4o
+    #   model: gpt-4o
+    #   api_key_env: OPENAI_API_KEY
+    # - name: claude_sonnet
+    #   model: claude-sonnet-5-5
+    #   api_key_env: ANTHROPIC_API_KEY
+
+# ── Publisher ────────────────────────────────────────────────────────────────
+zenodo:
+  concept_record_id: "16294115"
+  token_env: ZENODO_TOKEN   # GitHub Actions secret name
+
+# ── Schedule ─────────────────────────────────────────────────────────────────
+# Actual schedule is defined in .github/workflows/weekly_update.yml
+# Edit there to change frequency (default: every Monday 06:00 UTC)
+schedule: weekly

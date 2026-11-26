@@ -1,0 +1,48 @@
+name: Weekly Dataset Update
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:  # allow manual trigger from GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to commit updated CSV back to the repo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Run pipeline
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+        run: python pipeline.py
+
+      - name: Commit updated dataset
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/c0d3collective.csv
+          git diff --cached --quiet || git commit -m "chore: auto-update dataset $(date -u +%Y-%m-%d)"
+
+      - name: Push changes
+        run: git push
+
+      - name: Upload dataset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0d3collective-${{ github.run_id }}
+          path: data/c0d3collective.csv
+          retention-days: 90
