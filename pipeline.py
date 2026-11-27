@@ -150,19 +150,15 @@ def run(dry_run: bool = False, train: bool = False, tag_only: bool = False) -> N
     # ── 6. Publish to Zenodo ─────────────────────────────────────────────────
     if not dry_run and new_problems:
         from datetime import date
-        publisher = ZenodoPublisher()
-        record_url = publisher.publish_new_version(
-            DATASET_PATH,
-            metadata_update={
-                "version": f"{date.today().isoformat()}-auto",
-                "description": (
-                    f"Auto-updated C0D3Collective dataset — "
-                    f"{len(combined)} problems as of {date.today()}. "
-                    "Part of the COD3LYTICS master's thesis (PPGTI-IFPB)."
-                ),
-            },
-        )
-        logger.info(f"Zenodo record published: {record_url}")
+        try:
+            publisher = ZenodoPublisher()
+            record_url = publisher.publish_new_version(
+                DATASET_PATH,
+                metadata_update={"version": f"{date.today().isoformat()}-auto"},
+            )
+            logger.info(f"Zenodo record published: {record_url}")
+        except Exception as e:
+            logger.error(f"Zenodo publish falhou (CSV foi salvo localmente): {e}")
     elif dry_run:
         logger.info("Dry-run mode: Zenodo publish skipped.")
 

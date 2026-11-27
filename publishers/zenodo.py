@@ -48,14 +48,12 @@ class ZenodoPublisher:
         new_dep_id = new_dep_url.split("/")[-1]
         logger.info(f"Draft version created: {new_dep_id}")
 
-        # 2. Remove old files from draft
+        # 2. Get draft info and bucket URL
         draft = self.session.get(new_dep_url)
         draft.raise_for_status()
         bucket_url = draft.json()["links"]["bucket"]
-        for f in draft.json().get("files", []):
-            self.session.delete(f"{ZENODO_BASE}/deposit/depositions/{new_dep_id}/files/{f['id']}")
 
-        # 3. Upload new CSV
+        # 3. Upload new CSV (PUT to same filename overwrites the previous version)
         with open(csv_path, "rb") as fh:
             upload_resp = self.session.put(
                 f"{bucket_url}/{csv_path.name}",
@@ -63,14 +61,6 @@ class ZenodoPublisher:
             )
         upload_resp.raise_for_status()
         logger.info(f"Uploaded {csv_path.name} ({csv_path.stat().st_size:,} bytes)")
-
-        # 4. Optionally update metadata (e.g., version string, description)
-        if metadata_update:
-            meta_resp = self.session.put(
-                f"{ZENODO_BASE}/deposit/depositions/{new_dep_id}",
-                json={"metadata": metadata_update},
-            )
-            meta_resp.raise_for_status()
 
         # 5. Publish draft
         pub_resp = self.session.post(
