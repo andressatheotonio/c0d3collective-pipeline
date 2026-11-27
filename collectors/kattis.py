@@ -25,29 +25,39 @@ class KattisCollector(BaseCollector):
             raise RuntimeError("Install beautifulsoup4 to use KattisCollector: pip install beautifulsoup4")
 
         result = []
-        page = 0
+        # Kattis paginates from page=1; page=0 redirects to page=1
+        page = 1
         while True:
             url = f"{KATTIS_PROBLEMS_URL}&page={page}"
             resp = requests.get(url, timeout=30, headers={"User-Agent": "c0d3collective-pipeline/1.0"})
             resp.raise_for_status()
 
             soup = BeautifulSoup(resp.text, "html.parser")
-            rows = soup.select("table.table-problems tbody tr")
+            # Kattis uses two <table class="table2">: first is a filter widget,
+            # second is the problems listing. The class may have a trailing space.
+            tables = soup.find_all("table", class_="table2")
+            problems_table = tables[-1] if tables else None
+            if not problems_table:
+                logger.warning(f"Kattis: tabela não encontrada na página {page}.")
+                break
+
+            rows = problems_table.find_all("tr")[1:]  # skip header row
             if not rows:
                 break
 
             for row in rows:
                 cols = row.find_all("td")
-                if len(cols) < 5:
+                if len(cols) < 7:
                     continue
 
-                pid = cols[0].find("a")
-                if not pid:
+                link = cols[0].find("a", href=lambda h: h and "/problems/" in h)
+                if not link:
                     continue
-                problem_id = pid["href"].split("/")[-1]
-                name = pid.text.strip()
+                problem_id = link["href"].rstrip("/").split("/")[-1]
+                name = link.text.strip()
 
-                difficulty_text = cols[-1].text.strip()
+                # Difficulty column (index 6): "6.3\n    Hard" — take first token
+                difficulty_text = cols[6].text.strip().split()[0] if cols[6].text.strip() else ""
                 try:
                     difficulty = float(difficulty_text)
                 except ValueError:
@@ -61,7 +71,7 @@ class KattisCollector(BaseCollector):
                     url=f"https://open.kattis.com/problems/{problem_id}",
                     tags=[],
                     rating=difficulty,
-                    cf_scaled_difficulty=None,  # computed by normalizer
+                    cf_scaled_difficulty=None,
                     solved_count=None,
                     contest_id=None,
                     fetched_at=datetime.utcnow(),
