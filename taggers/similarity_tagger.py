@@ -57,8 +57,9 @@ class SimilarityTagger(BaseTagger):
 
         if self._model is None:
             self._load_model()
-        if self._corpus_embeddings is None or self._corpus_problems is None:
-            raise RuntimeError("Call build_corpus() before tagging.")
+        if self._corpus_embeddings is None or self._corpus_problems is None or len(self._corpus_problems) == 0:
+            logger.warning(f"Corpus vazio — sem tags para {problem_id}")
+            return TagResult(tags=[], confidence=0.0, votes={}, estimated=True, tags_source="similarity")
 
         query_embedding = self._model.encode([problem_name], normalize_embeddings=True)[0]
         similarities = self._corpus_embeddings @ query_embedding

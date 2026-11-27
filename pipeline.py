@@ -98,9 +98,12 @@ def run(dry_run: bool = False, train: bool = False, tag_only: bool = False) -> N
 
     for p in new_problems:
         if p.cf_scaled_difficulty is None:
-            result = ml_predictor.predict(p.name, p.tags, p.platform, p.solved_count)
-            p.cf_scaled_difficulty = result.cf_scaled_difficulty
-            p.estimated = True
+            try:
+                result = ml_predictor.predict(p.name, p.tags, p.platform, p.solved_count)
+                p.cf_scaled_difficulty = result.cf_scaled_difficulty
+                p.estimated = True
+            except FileNotFoundError:
+                logger.warning(f"Sem modelo ML treinado — pulando predição de rating para {p.id}")
 
     # ── 4. Tag untagged problems ─────────────────────────────────────────────
     tagger_list = build_taggers(cfg)

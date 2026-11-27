@@ -19,7 +19,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 ZENODO_BASE = "https://zenodo.org/api"
-CONCEPT_RECORD_ID = "16294115"  # C0D3Collective concept record
+CONCEPT_RECORD_ID = "16294115"  # versão atual; newversion cria a próxima a partir desta
 
 
 class ZenodoPublisher:
