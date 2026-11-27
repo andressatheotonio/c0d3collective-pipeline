@@ -32,7 +32,7 @@ jobs:
       - name: Run pipeline
         env:
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
-        run: python pipeline.py
+        run: python pipeline.py --dry-run
 
       - name: Commit updated dataset
         run: |
