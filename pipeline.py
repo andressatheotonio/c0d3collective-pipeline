@@ -147,7 +147,10 @@ def run(dry_run: bool = False, train: bool = False, tag_only: bool = False) -> N
         combined = existing_df
         logger.info("No new problems collected.")
 
-    # ── 6. Publish to Zenodo ─────────────────────────────────────────────────
+    # ── 6. Generate stats.json ───────────────────────────────────────────────
+    _generate_stats(combined, new_problems, existing_df)
+
+    # ── 7. Publish to Zenodo ─────────────────────────────────────────────────
     if not dry_run and new_problems:
         from datetime import date
         try:
@@ -161,6 +164,70 @@ def run(dry_run: bool = False, train: bool = False, tag_only: bool = False) -> N
             logger.error(f"Zenodo publish falhou (CSV foi salvo localmente): {e}")
     elif dry_run:
         logger.info("Dry-run mode: Zenodo publish skipped.")
+
+
+def _generate_stats(combined: pd.DataFrame, new_problems: list, existing_df: pd.DataFrame) -> None:
+    """Write data/stats.json with current dataset stats and append this run to history."""
+    import json
+    from datetime import date, timezone
+
+    stats_path = Path("data/stats.json")
+
+    # Load existing stats to preserve run history
+    existing_stats: dict = {}
+    if stats_path.exists():
+        try:
+            with open(stats_path) as f:
+                existing_stats = json.load(f)
+        except Exception:
+            existing_stats = {}
+
+    runs_history: list = existing_stats.get("runs", [])
+
+    def platform_stats(df: pd.DataFrame, platform: str) -> dict:
+        sub = df[df["platform"] == platform] if not df.empty else pd.DataFrame()
+        total = len(sub)
+        with_rating = int(sub["cf_scaled_difficulty"].notna().sum()) if total else 0
+        estimated = int(sub["estimated"].astype(str).str.lower().isin(["true", "1"]).sum()) if total else 0
+        with_tags = int((sub["tags"].notna() & (sub["tags"].astype(str).str.strip() != "")).sum()) if total else 0
+        return {"total": total, "with_rating": with_rating, "estimated": estimated, "with_tags": with_tags}
+
+    platforms = ["codeforces", "atcoder", "kattis"]
+    by_platform = {p: platform_stats(combined, p) for p in platforms}
+
+    added_by_platform = {}
+    for p in platforms:
+        added_by_platform[p] = len([x for x in new_problems if x.platform == p])
+
+    total = len(combined)
+    with_rating = int(combined["cf_scaled_difficulty"].notna().sum()) if total else 0
+    with_tags = int((combined["tags"].notna() & (combined["tags"].astype(str).str.strip() != "")).sum()) if total else 0
+
+    today = date.today().isoformat()
+    run_entry = {
+        "date": today,
+        "total_after": total,
+        "added": {"total": len(new_problems), **added_by_platform},
+    }
+    # Avoid duplicate entries for the same date
+    runs_history = [r for r in runs_history if r.get("date") != today]
+    runs_history.append(run_entry)
+
+    stats = {
+        "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "total": total,
+        "with_rating": with_rating,
+        "rating_pct": round(with_rating / total * 100, 1) if total else 0,
+        "with_tags": with_tags,
+        "tags_pct": round(with_tags / total * 100, 1) if total else 0,
+        "by_platform": by_platform,
+        "runs": runs_history,
+    }
+
+    stats_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(stats_path, "w") as f:
+        json.dump(stats, f, indent=2)
+    logger.info(f"Stats saved → {stats_path}")
 
 
 if __name__ == "__main__":
