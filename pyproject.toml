@@ -24,6 +24,9 @@ dev = [
     "xgboost>=2.0",
 ]
 
+[tool.setuptools.packages.find]
+include = ["collectors*", "normalizers*", "taggers*", "publishers*"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"
